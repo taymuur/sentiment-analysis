@@ -1,0 +1,110 @@
+---
+title: "MA331-Coursework"
+subtitle: "Sentiment Analysis of the TED talks by Cameron Sinclair and Frans Lanting"
+author: "Student"
+date: "3/30/2022"
+output: 
+html_document:
+theme: cerulean
+highlight: textmate
+fontsize: 8pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Abstract
+
+TED (Technology, Entertainment and Design) is an impactful non-profit media organization which is devoted to spreading ideas since 1990. TED usually achieves its objective by holding TED Talks in different countries thoughout the globe. These TED Talks are generally posted online as short presentations for free distribution, under the slogan 'ideas worth spreading'. TED Talks are often available on any topic that crosses our mind. Speakers around the world share their success stories, innovative ideas, smart solutions and the struggles they had to go through in life. With talks ranging from science to business to global issues, TED provides a unique and powerful platform for the speakers to educate the audience.
+
+### Introduction
+
+In this analysis, we aim to explore TED Talks of *Cameron Sinclair* and *Frans Lanting* to generate some useful insights from it. This includes extracting the most commonly used words by the the speakers during the talk and mapping them to sentiment values. This allows us to understand the dominant sentiments expressed in the talks. Broadly, we can classify the sentiments as positive, negative or neutral but here we can extend it to gauage the thoughts, opinions and feelings of the speakers during the talk.
+
+### Methods
+
+The following libraries are loaded in to the program: 
+
+* dsEssex: includes a variety of data examples, case-studies, dependencies and practical sheets that can facilitate acquisition and analysis of the TED Talks.
+
+* tidyverse: includes the packages that are essential for mapping variables to aesthetics as well as manipulating and cleaning the data in the form of tables.
+
+* tidytext: includes the packages that can make the keyword mining easier and more efficient with minimum user effort.
+
+The data is loaded  using the dsEssex library. It is then filtered for the TED Talks of the desired speakers. The ggplot2 package allow us to map the sentiments to create aesthetic graphs which shows the most dominant sentiments expressed during the talk. The tidytext package allow us to convert text between tidy tools and exising text mining packages. With the help of this, we can mine targeted words from the data and analyse the sentiment of the speaker during the talk.
+
+### Results
+
+```{r Libraries for analysis}
+#Load the data set
+library(dsEssex) 
+
+#Preprocess the data set
+library(tidyverse) 
+
+#Sentiment and word frequency analysis
+library(tidytext) 
+
+#Load the data of speakers
+data(ted_talks) 
+mydata<-ted_talks %>% 
+  filter(speaker %in% c("Cameron Sinclair", "Frans Lanting"))
+```
+
+```{r }
+wf<-data_frame(words = mydata$text ) %>% 
+  unnest_tokens(word, words) %>%    
+  anti_join(stop_words) %>%
+  count(word, sort = TRUE) %>% arrange(desc(n)) 
+head(wf,10)
+tail(wf,10)
+ggplot(wf[1:50,], aes(x=word, y=n)) +
+  geom_segment( aes(x=word, xend=word, y=0, yend=n), color="black") +
+  geom_point( color="red", size=4, alpha=0.6) +
+  theme_light() +
+  coord_flip() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank())
+```
+
+### Discussion
+
+From the results it can be concluded that most frequent word in the talks are 'hum', which was spoken 75 times during the talk. The second and third most frequent words are: 'community' and 'world' both appearing 22 times. The third most frequent word is 'life' with a count of 18. Some other frequently words include: 'design', 'people', 'time', 'involved', 'ideas' and 'earth'.
+
+Some of the least commonly used words during the talk are: 'workshops', 'worry', 'yanked', 'write', and 'york'. These words are each spoken only once throughout the talk.
+
+
+```{r }
+sent<-data_frame(words = mydata$text ) %>% 
+  unnest_tokens(word, words) %>%    
+  anti_join(stop_words) %>%
+  count(word, sort = TRUE) 
+
+sent1<-sent %>% inner_join(get_sentiments("nrc")) %>%
+  count(sentiment) %>%
+  spread(sentiment, n) %>% gather( key = "Sentiment", value = "Value")
+sent1
+
+ggplot(sent1, aes(x=Sentiment, y=Value)) +
+  geom_segment( aes(x=Sentiment, xend=Sentiment, y=0, yend=Value), color="black") +
+  geom_point( color="red", size=4, alpha=0.6) +
+  theme_light() +
+  coord_flip() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank())
+```
+
+By mapping the most frequent words to the sentiment value, it can also be concluded that the highest sentiment in speech is 'positive' with a score of 127 followed by 'trust' with a score of 75. The third and fourth most dominant sentiments are 'negative' and 'anticipating' with a score of 67 and 56 respectively.
+
+### Conclusion
+
+The sentiment analysis helps to determine the emotional content of the talks. It can be used to understand the speaker's thought, feelings and emotions. According to the results, the most commonly used words in the talk are 'community' and 'world'. The least commonly used words are 'workshops', 'worry' and 'yesterday'. From this, it is evident that the most common sentiment in speech is 'positive', followed by 'negative' and 'anticipation'. 
+
+Therefore, from the above results and discussion, we can conclude that a 'positive' sentiment is expressed during most of the TED Talks. However, the 'negative' sentiment goes side-by-side along with 'anticipation' and 'trust'.
+
+Such types of sentiment analysis may help with digital marketing, campaign management, and customer satisfaction, for mention a few applications.
